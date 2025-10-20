@@ -1,4 +1,4 @@
-package chat
+package websocket_chat_client
 
 import (
 	"encoding/json"
