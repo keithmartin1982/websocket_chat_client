@@ -11,7 +11,6 @@ import (
 type Client struct {
 	Conn        *websocket.Conn
 	Addr        string
-	Port        string
 	Proto       string
 	wsPath      string
 	RoomID      string
@@ -37,7 +36,7 @@ type Msg struct {
 func (c *Client) Connect() error {
 	var err error
 	c.wsPath = "message_ws"
-	c.Conn, _, err = websocket.DefaultDialer.Dial(fmt.Sprintf("%s://%s:%s/%s", c.Proto, c.Addr, c.Port, c.wsPath), nil)
+	c.Conn, _, err = websocket.DefaultDialer.Dial(fmt.Sprintf("%s://%s/%s", c.Proto, c.Addr, c.wsPath), nil)
 	if err != nil {
 		return fmt.Errorf("dial: %v", err)
 	}
