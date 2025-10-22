@@ -1,17 +1,21 @@
 package websocket_chat_client
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 	
 	"github.com/gorilla/websocket"
 )
 
 type Client struct {
-	Conn        *websocket.Conn
-	Addr        string
-	Proto       string
+	Conn  *websocket.Conn
+	Addr  string
+	Proto string
+	// SelfSigned Disables checking CA store for cert
+	SelfSigned  bool
 	wsPath      string
 	RoomID      string
 	RoomPass    string
@@ -36,7 +40,12 @@ type Msg struct {
 func (c *Client) Connect() error {
 	var err error
 	c.wsPath = "message_ws"
-	c.Conn, _, err = websocket.DefaultDialer.Dial(fmt.Sprintf("%s://%s/%s", c.Proto, c.Addr, c.wsPath), nil)
+	dd := websocket.DefaultDialer
+	dd.TLSClientConfig = &tls.Config{
+		InsecureSkipVerify: c.SelfSigned,
+	}
+	dd.HandshakeTimeout = 10 * time.Second
+	c.Conn, _, err = dd.Dial(fmt.Sprintf("%s://%s/%s", c.Proto, c.Addr, c.wsPath), nil)
 	if err != nil {
 		return fmt.Errorf("dial: %v", err)
 	}
@@ -74,7 +83,6 @@ func (c *Client) listener() {
 			default:
 				jsonString = message
 			}
-			// TODO : decrypt Data before sending in channel
 			c.MessageChan <- struct {
 				Type int
 				Data []byte
